@@ -6,11 +6,11 @@ app = Flask(__name__, static_folder="static", template_folder="templates")
 app.register_blueprint(audit_blueprint)
 
 
-@app.route('/dashboard', methods=["GET", "POST"])
+@app.route('/dashboard')
 def dashboard():
-    url = request.args.get("url", "https://example.com")  # Default fallback
-    seo_result = extract_seo_data(url)
-    return render_template("seo_dashboard.html", result=seo_result)
+    url = request.args.get("url", "")
+    seo_result = extract_seo_data(url) if url else None
+    return render_template("seo_dashboard.html", result=seo_result, url=url)
     
 @app.route("/")
 def home():

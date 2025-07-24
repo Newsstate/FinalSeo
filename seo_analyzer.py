@@ -58,26 +58,22 @@ def extract_seo_data(url):
                 continue
 
         # Broken links
-        links = soup.find_all("a", href=True)
-        broken_links = 0
-        nofollow_links = 0
-        external_links = 0
-        for link in links:
-            href = link.get("href")
-            rel = link.get("rel")
-            if not is_valid_link(href):
-                continue
-            full_url = urljoin(url, href)
-            if "nofollow" in (rel or []):
-                nofollow_links += 1
-            if urlparse(full_url).netloc != urlparse(url).netloc:
-                external_links += 1
-            try:
-                res = requests.head(full_url, allow_redirects=True, timeout=5)
-                if res.status_code >= 400:
-                    broken_links += 1
-            except Exception:
-                broken_links += 1
+       for i, link in enumerate(links[:5]):
+    href = link.get("href")
+    rel = link.get("rel")
+    if not is_valid_link(href):
+        continue
+    full_url = urljoin(url, href)
+    if "nofollow" in (rel or []):
+        nofollow_links += 1
+    if urlparse(full_url).netloc != urlparse(url).netloc:
+        external_links += 1
+    try:
+        res = requests.head(full_url, allow_redirects=True, timeout=3)
+        if res.status_code >= 400:
+            broken_links += 1
+    except Exception:
+        broken_links += 1
 
         # Score calculation
         score = {

@@ -112,6 +112,4 @@ def extract_seo_data(url):
 
     except Exception as e:
         return {"error": str(e), "url": url}
-
-
-import ace_tools as tools; tools.display_dataframe_to_user(name="SEO Audit Sample", dataframe=[extract_seo_data("https://www.timesprime.com/")])
+}

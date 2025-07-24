@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from routes.audit import audit_blueprint
 
-app = Flask(__name__, static_folder="../frontend/static", template_folder="../frontend/templates")
+app = Flask(__name__, static_folder="../static", template_folder="../templates")
 app.register_blueprint(audit_blueprint)
 
 @app.route("/")

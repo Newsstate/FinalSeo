@@ -1,0 +1,5 @@
+body { font-family: sans-serif; padding: 2em; background: #f9f9f9; }
+.container { background: #fff; padding: 2em; border-radius: 8px; max-width: 600px; margin: auto; }
+input { width: 80%; padding: 0.5em; }
+button { padding: 0.5em 1em; }
+pre { background: #efefef; padding: 1em; white-space: pre-wrap; }

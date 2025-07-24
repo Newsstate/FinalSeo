@@ -2,25 +2,45 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SEO Boost – Analyzer</title>
+  <title>SEO Boost Results</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <h1>SEO Boost</h1>
-  <input type="text" id="url" placeholder="Enter website URL">
-  <button onclick="analyze()">Scan</button>
-  <pre id="result"></pre>
+  <div class="dashboard-container">
+    <h1>🔍 SEO Audit Result</h1>
+    
+    <form id="scanForm">
+      <input type="text" placeholder="Enter URL" id="urlInput" required />
+      <button type="submit">Scan</button>
+    </form>
 
-  <script>
-    async function analyze() {
-      const url = document.getElementById('url').value;
-      const res = await fetch('/api/scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
-      });
-      const data = await res.json();
-      document.getElementById('result').textContent = JSON.stringify(data, null, 2);
-    }
-  </script>
+    <div id="loader" class="loader hidden">Scanning...</div>
+
+    <div id="results" class="hidden animate-in">
+      <h2>URL: <span id="url"></span></h2>
+      <div class="score-panel">
+        <h3>Overall Score: <span id="overallScore"></span>/100</h3>
+        <canvas id="scoreChart"></canvas>
+      </div>
+      <div class="metadata">
+        <h4>Meta Title:</h4><p id="metaTitle"></p>
+        <h4>Meta Description:</h4><p id="metaDescription"></p>
+        <h4>Robots Tag:</h4><p id="robotsTag"></p>
+        <h4>Canonical:</h4><p id="canonical"></p>
+        <h4>Lang:</h4><p id="langTag"></p>
+        <h4>Date Published:</h4><p id="datePublished"></p>
+        <h4>Broken Links:</h4><p id="brokenLinks"></p>
+        <h4>Nofollow Links:</h4><p id="nofollowLinks"></p>
+      </div>
+
+      <div class="actions">
+        <button onclick="exportToCSV()">📄 Export to CSV</button>
+        <button onclick="exportToPDF()">📕 Export to PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/script.js"></script>
 </body>
 </html>

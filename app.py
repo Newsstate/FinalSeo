@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from routes.audit import audit_blueprint
+from seo_analyzer import extract_seo_data
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.register_blueprint(audit_blueprint)

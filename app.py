@@ -5,6 +5,13 @@ from seo_analyzer import extract_seo_data
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.register_blueprint(audit_blueprint)
 
+
+@app.route('/dashboard', methods=["GET", "POST"])
+def dashboard():
+    url = request.args.get("url", "https://example.com")  # Default fallback
+    seo_result = extract_seo_data(url)
+    return render_template("seo_dashboard.html", result=seo_result)
+    
 @app.route("/")
 def home():
     return render_template("index.html")

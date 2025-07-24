@@ -57,8 +57,13 @@ def extract_seo_data(url):
             except Exception:
                 continue
 
-        # Broken links
-       for i, link in enumerate(links[:5]):
+       # Broken links
+links = soup.find_all("a", href=True)
+broken_links = 0
+nofollow_links = 0
+external_links = 0
+
+for i, link in enumerate(links[:5]):  # Limit to 5 links for performance
     href = link.get("href")
     rel = link.get("rel")
     if not is_valid_link(href):
@@ -74,6 +79,7 @@ def extract_seo_data(url):
             broken_links += 1
     except Exception:
         broken_links += 1
+
 
         # Score calculation
         score = {

@@ -27,10 +27,11 @@
       <h2 class="text-xl font-bold mb-4">SEO Audit</h2>
 
       <!-- URL Scan Form -->
-      <form id="scanForm" class="space-y-3">
-        <input id="urlInput" type="text" placeholder="Enter URL..." class="w-full border px-3 py-2 rounded" required>
-        <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded">Scan</button>
-      </form>
+    <form method="GET" action="/">
+  <input name="url" type="text" placeholder="Enter URL..." required>
+  <button type="submit">Scan</button>
+</form>
+
 
       {% if result %}
       <div class="mt-6">

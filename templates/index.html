@@ -1,18 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SEO Boost</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <meta charset="UTF-8" />
+  <title>SEO Boost – Analyzer</title>
 </head>
 <body>
-  <div class="container">
-    <h1>SEO Boost</h1>
-    <input type="text" id="urlInput" placeholder="Enter URL to audit..." />
-    <button onclick="runAudit()">Audit</button>
-    <pre id="resultBox"></pre>
-  </div>
-  <script src="/static/app.js"></script>
+  <h1>SEO Boost</h1>
+  <input type="text" id="url" placeholder="Enter website URL">
+  <button onclick="analyze()">Scan</button>
+  <pre id="result"></pre>
+
+  <script>
+    async function analyze() {
+      const url = document.getElementById('url').value;
+      const res = await fetch('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      const data = await res.json();
+      document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    }
+  </script>
 </body>
 </html>

@@ -112,4 +112,4 @@ def extract_seo_data(url):
 
     except Exception as e:
         return {"error": str(e), "url": url}
-}
+

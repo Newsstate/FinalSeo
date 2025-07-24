@@ -9,6 +9,10 @@
   <script>
     tailwind.config = { theme: { extend: { colors: { scoreGood: '#22c55e', scoreFair: '#eab308', scorePoor: '#ef4444' } } } }
   </script>
+  <script>
+  const seoResult = {{ result | tojson }};
+  console.log("Live SEO Data:", seoResult);
+</script>
 </head>
 
 <body class="bg-gray-50 text-gray-800">

@@ -1,5 +1,49 @@
-body { font-family: sans-serif; padding: 2em; background: #f9f9f9; }
-.container { background: #fff; padding: 2em; border-radius: 8px; max-width: 600px; margin: auto; }
-input { width: 80%; padding: 0.5em; }
-button { padding: 0.5em 1em; }
-pre { background: #efefef; padding: 1em; white-space: pre-wrap; }
+/* public/static/styles.css */
+body {
+  font-family: Arial, sans-serif;
+  background: #f9f9fb;
+  margin: 0;
+  padding: 20px;
+}
+
+.dashboard-container {
+  max-width: 900px;
+  margin: auto;
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.1);
+}
+
+.loader {
+  text-align: center;
+  margin-top: 20px;
+  font-weight: bold;
+}
+
+.hidden {
+  display: none;
+}
+
+.animate-in {
+  animation: fadeIn 0.5s ease-in forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+button {
+  margin: 10px 5px;
+  padding: 8px 15px;
+  background: #2f80ed;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.score-panel {
+  margin-top: 20px;
+}

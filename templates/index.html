@@ -25,11 +25,10 @@
     <!-- Sidebar -->
     <aside class="bg-white border-r w-full lg:w-64 p-6 sticky top-0 shadow-md">
       <h2 class="text-xl font-bold mb-4">SEO Audit</h2>
-
       <!-- URL Scan Form -->
-      <form id="scanForm">
-        <input id="urlInput" name="url" type="text" placeholder="Enter URL..." class="w-full border px-3 py-2 rounded" required>
-        <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded mt-2">Scan</button>
+      <form method="GET" action="/">
+        <input name="url" type="text" placeholder="Enter URL..." class="w-full border px-3 py-2 rounded" required>
+        <button type="submit" class="w-full bg-blue-600 text-white mt-2 px-4 py-2 rounded">Scan</button>
       </form>
 
       {% if result %}
@@ -62,16 +61,49 @@
       </div>
 
       {% if result %}
-      <section class="space-y-3">
+      <section class="space-y-6">
         <div class="bg-white p-4 rounded shadow">
-          <p><strong>Meta Title:</strong> {{ result.meta_title or '—' }}</p>
-          <p><strong>Meta Description:</strong> {{ result.meta_description or '—' }}</p>
-          <p><strong>Robots Tag:</strong> {{ result.robots_tag or '—' }}</p>
-          <p><strong>Canonical:</strong> {{ result.canonical or '—' }}</p>
-          <p><strong>Lang:</strong> {{ result.lang_tag or '—' }}</p>
-          <p><strong>Date Published:</strong> {{ result.date_published or '—' }}</p>
+          <h2 class="text-xl font-semibold mb-2">Meta Tags</h2>
+          <p><strong>Title:</strong> {{ result.meta_title }}</p>
+          <p><strong>Description:</strong> {{ result.meta_description }}</p>
+          <p><strong>Canonical:</strong> <a href="{{ result.canonical }}" class="text-blue-600" target="_blank">{{ result.canonical }}</a></p>
+        </div>
+
+        <div class="bg-white p-4 rounded shadow">
+          <h2 class="text-xl font-semibold mb-2">Technical SEO</h2>
+          <p><strong>Language:</strong> {{ result.lang_tag }}</p>
+          <p><strong>Robots Meta Tag:</strong> {{ result.robots_tag }}</p>
+          <p><strong>robots.txt:</strong></p>
+          <pre class="bg-gray-100 p-2 text-sm rounded whitespace-pre-wrap">{{ result.robots_txt_contains }}</pre>
+        </div>
+
+        <div class="bg-white p-4 rounded shadow">
+          <h2 class="text-xl font-semibold mb-2">Content Metadata</h2>
+          <p><strong>Date Published:</strong> {{ result.date_published }}</p>
+          <p><strong>Date Modified:</strong> {{ result.date_modified }}</p>
+        </div>
+
+        <div class="bg-white p-4 rounded shadow">
+          <h2 class="text-xl font-semibold mb-2">Accessibility & Structure</h2>
+          <p><strong>Images missing alt:</strong> {{ result.image_alt_missing }}</p>
+          <p><strong>H1:</strong> {{ result.headings.H1 }}, <strong>H2:</strong> {{ result.headings.H2 }}, <strong>H3:</strong> {{ result.headings.H3 }}</p>
+        </div>
+
+        <div class="bg-white p-4 rounded shadow">
+          <h2 class="text-xl font-semibold mb-2">Schema Types</h2>
+          <pre class="text-sm whitespace-pre-wrap">{{ result.schema_types | tojson(indent=2) }}</pre>
+        </div>
+
+        <div class="bg-white p-4 rounded shadow">
+          <h2 class="text-xl font-semibold mb-2">Link Analysis</h2>
           <p><strong>Broken Links:</strong> {{ result.broken_links }}</p>
-          <p><strong>Nofollow Links:</strong> {{ result.external_links_nofollow }}</p>
+          <p><strong>Nofollow External Links:</strong> {{ result.external_links_nofollow }}</p>
+        </div>
+
+        <div class="bg-white p-4 rounded shadow">
+          <h2 class="text-xl font-semibold mb-2">Performance</h2>
+          <p><strong>Load Time:</strong> {{ result.load_time }} ms</p>
+          <p><strong>Page Size:</strong> {{ result.page_size }}</p>
         </div>
       </section>
       {% endif %}
@@ -79,14 +111,6 @@
   </div>
 
   <script>
-    document.getElementById("scanForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const url = document.getElementById("urlInput").value;
-      if (url) {
-        window.location.href = `/?url=${encodeURIComponent(url)}`;
-      }
-    });
-
     const result = {{ result | tojson | safe }};
     function exportToJSON() {
       const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });

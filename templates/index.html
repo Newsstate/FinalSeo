@@ -27,9 +27,9 @@
       <h2 class="text-xl font-bold mb-4">SEO Audit</h2>
 
       <!-- URL Scan Form -->
-    <form method="GET" action="/">
-  <input name="url" type="text" placeholder="Enter URL..." required>
-  <button type="submit">Scan</button>
+    <form id="scanForm" method="GET" action="/">
+  <input id="urlInput" name="url" type="text" placeholder="Enter URL..." required class="w-full border px-3 py-2 rounded">
+  <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded">Scan</button>
 </form>
 
 
@@ -131,13 +131,7 @@
 
   <script>
     // Handle the form to trigger redirect to /?url=
-    document.getElementById('scanForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      const url = document.getElementById('urlInput').value;
-      if (url) {
-        window.location.href = `/?url=${encodeURIComponent(url)}`;
-      }
-    });
+   
 
     // Export scripts
     const result = {{ result | tojson | safe }};

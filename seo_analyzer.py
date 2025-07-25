@@ -1,115 +1,107 @@
+
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 import json
-import re
-
-
-def is_valid_link(href):
-    return href and not href.startswith('#') and not href.lower().startswith('javascript:')
-
 
 def extract_seo_data(url):
     try:
-        response = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
-        if response.status_code != 200:
-            return {"error": f"Failed to fetch URL: {response.status_code}"}
-
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        }
+        response = requests.get(url, headers=headers, timeout=10)
         soup = BeautifulSoup(response.text, 'html.parser')
-        base_url = f"{urlparse(url).scheme}://{urlparse(url).netloc}"
+
+        meta_title = soup.title.string.strip() if soup.title else ""
+        meta_description = ""
+        robots_tag = ""
+        canonical = ""
+        lang_tag = soup.html.get("lang") if soup.html and soup.html.get("lang") else ""
 
         # Meta tags
-        title = soup.title.string.strip() if soup.title else ''
-        meta_desc = soup.find("meta", attrs={"name": "description"})
-        meta_keywords = soup.find("meta", attrs={"name": "keywords"})
-        meta_robots = soup.find("meta", attrs={"name": "robots"})
-        canonical_tag = soup.find("link", rel="canonical")
-        lang_tag = soup.html.get("lang") if soup.html else None
+        for tag in soup.find_all("meta"):
+            if tag.get("name") == "description":
+                meta_description = tag.get("content", "")
+            if tag.get("name") == "robots":
+                robots_tag = tag.get("content", "")
 
-        # Breadcrumb detection
-        breadcrumb = soup.select('[itemtype*="BreadcrumbList"]')
+        # Canonical
+        link_tag = soup.find("link", rel="canonical")
+        if link_tag:
+            canonical = link_tag.get("href", "")
 
-        # Date detection
-        date_published = soup.find("meta", attrs={"property": "article:published_time"}) or \
-                         soup.find("meta", attrs={"name": "date"})
-        date_modified = soup.find("meta", attrs={"property": "article:modified_time"})
+        # Published/Modified dates
+        date_published = ""
+        date_modified = ""
+        for tag in soup.find_all("meta"):
+            if tag.get("property") == "article:published_time":
+                date_published = tag.get("content", "")
+            if tag.get("property") == "article:modified_time":
+                date_modified = tag.get("content", "")
 
-        # Author detection
-        author = soup.find("meta", attrs={"name": "author"})
-        author_link = soup.find("a", href=True, text=re.compile("author", re.IGNORECASE))
+        # Alt tag check
+        images = soup.find_all("img")
+        images_missing_alt = sum(1 for img in images if not img.get("alt"))
 
-        # Robots.txt
-        robots_txt_url = urljoin(base_url, "/robots.txt")
-        robots_txt = requests.get(robots_txt_url).text if "robots.txt" in robots_txt_url else ""
+        # Heading structure
+        headings = {f'h{i}': len(soup.find_all(f'h{i}')) for i in range(1, 7)}
 
-        # max-image-preview
-        max_preview = "large" in (meta_robots["content"].lower() if meta_robots and meta_robots.has_attr("content") else "")
-
-        # Schema
-        schemas = []
+        # Schema types
+        schema_types = []
         for script in soup.find_all("script", type="application/ld+json"):
             try:
-                data = json.loads(script.string)
-                if isinstance(data, dict) and "@type" in data:
-                    schemas.append(data["@type"])
-                elif isinstance(data, list):
-                    schemas.extend([item.get("@type") for item in data if "@type" in item])
+                parsed = json.loads(script.string)
+                if isinstance(parsed, dict):
+                    types = [parsed.get("@type")]
+                elif isinstance(parsed, list):
+                    types = [item.get("@type") for item in parsed if "@type" in item]
+                else:
+                    types = []
+                schema_types.extend(types)
             except Exception:
                 continue
 
-        # Broken links
-        links = soup.find_all("a", href=True)
+        # Link analysis
+        total_links = soup.find_all("a")
         broken_links = 0
         nofollow_links = 0
-        external_links = 0
-
-        for i, link in enumerate(links[:5]):  # Limit to 5 links for performance
+        for link in total_links:
             href = link.get("href")
-            rel = link.get("rel")
-            if not is_valid_link(href):
-                continue
-            full_url = urljoin(url, href)
-            if "nofollow" in (rel or []):
-                nofollow_links += 1
-            if urlparse(full_url).netloc != urlparse(url).netloc:
-                external_links += 1
-            try:
-                res = requests.head(full_url, allow_redirects=True, timeout=3)
-                if res.status_code >= 400:
+            if href:
+                if "nofollow" in link.get("rel", []):
+                    nofollow_links += 1
+                full_url = urljoin(url, href)
+                try:
+                    link_response = requests.head(full_url, timeout=5)
+                    if link_response.status_code >= 400:
+                        broken_links += 1
+                except:
                     broken_links += 1
-            except Exception:
-                broken_links += 1
 
-        # Score calculation
-        score = {
-            "Metadata": int(bool(title) and bool(meta_desc)) * 100,
-            "Links": max(100 - broken_links * 2, 0),
-            "Schema": min(len(schemas) * 10, 100),
-            "Technical": 75 if robots_txt else 50
-        }
-        overall_score = int(sum(score.values()) / len(score))
+        # Performance (basic)
+        load_time_ms = round(response.elapsed.total_seconds() * 1000)
+        page_size_kb = round(len(response.content) / 1024, 2)
 
         return {
-            "meta_title": title,
-            "meta_description": meta_desc["content"] if meta_desc and meta_desc.has_attr("content") else "",
-            "meta_keywords_length": len(meta_keywords["content"]) if meta_keywords and meta_keywords.has_attr("content") else 0,
-            "canonical": canonical_tag["href"] if canonical_tag and canonical_tag.has_attr("href") else None,
-            "canonical_self": canonical_tag and canonical_tag["href"] == url,
-            "robots_tag": meta_robots["content"] if meta_robots and meta_robots.has_attr("content") else "",
+            "meta_title": meta_title,
+            "meta_description": meta_description,
+            "robots_tag": robots_tag,
+            "canonical": canonical,
             "lang_tag": lang_tag,
-            "breadcrumb_present": bool(breadcrumb),
-            "date_published": date_published["content"] if date_published and date_published.has_attr("content") else "",
-            "date_modified": date_modified["content"] if date_modified and date_modified.has_attr("content") else "",
-            "author_profile_clickable": bool(author_link),
+            "date_published": date_published,
+            "date_modified": date_modified,
+            "image_alt_missing": images_missing_alt,
+            "headings": headings,
+            "schema_types": schema_types,
+            "total_links": len(total_links),
             "broken_links": broken_links,
             "external_links_nofollow": nofollow_links,
-            "schema_types": schemas,
-            "robots_txt_contains": robots_txt[:300],
-            "max_image_preview_large": max_preview,
-            "score_breakdown": score,
-            "overall_score": overall_score,
-            "url": url
+            "load_time_ms": load_time_ms,
+            "page_size_kb": page_size_kb,
+            "overall_score": 85  # Placeholder logic
         }
 
     except Exception as e:
-        return {"error": str(e), "url": url}
+        return {
+            "error": str(e)
+        }
